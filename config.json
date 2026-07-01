@@ -1,0 +1,49 @@
+{
+  "version": "zh-CN-1",
+  "timerDefaultSeconds": 900,
+  "enableDragAndDrop": false,
+  "groups": [
+    { "name": "第 1 组", "color": "#FF8C42" },
+    { "name": "第 2 组", "color": "#2E86AB" },
+    { "name": "第 3 组", "color": "#A23B72" },
+    { "name": "第 4 组", "color": "#F18F01" },
+    { "name": "第 5 组", "color": "#27AE60" }
+  ],
+  "cards": [
+    {
+      "id": 1,
+      "type": "🎵 音乐",
+      "task": "用你最喜欢的电影风格，为今天的会议生成一段开场音乐。",
+      "platforms": "Gemini, Suno/Udio",
+      "groupHint": "适合第 1 组或任意小组"
+    },
+    {
+      "id": 2,
+      "type": "🎵 音乐",
+      "task": "改写《两只老虎》，歌词要唱出现实职场痛点。",
+      "platforms": "Gemini, Suno/Udio",
+      "groupHint": "适合第 2 组"
+    },
+    {
+      "id": 3,
+      "type": "🖼️ 图片",
+      "task": "HR 团建现场：所有人骑着龙虾在城市里竞速。",
+      "platforms": "豆包、即梦、Minimax、Gemini",
+      "groupHint": "适合第 3 组"
+    },
+    {
+      "id": 4,
+      "type": "🖼️ 图片",
+      "task": "描绘 10 年后的办公室：人类与 AI 或机器人共同协作。",
+      "platforms": "豆包、即梦、Minimax、Gemini",
+      "groupHint": "适合所有小组"
+    },
+    {
+      "id": 5,
+      "type": "🖼️ 图片",
+      "task": "在梵高《星空》中，每一颗星星都是一张发光的 Excel 图表。",
+      "platforms": "豆包、即梦、Minimax、Gemini",
+      "groupHint": "适合第 5 组"
+    }
+  ]
+}

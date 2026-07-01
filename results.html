@@ -1,0 +1,386 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 提示词挑战 - 投票结果</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f1a24 0%, #1a2a3a 50%, #2c3e50 100%);
+            background-attachment: fixed;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD966, #FF8C42, #f39c12);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p { color: #94a3b8; font-size: 14px; }
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-value { font-size: 28px; font-weight: 800; color: #f39c12; }
+        .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .refresh-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            color: #64748b;
+            font-size: 13px;
+        }
+        .refresh-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+        .refresh-btn:hover { background: rgba(255,255,255,0.2); }
+        .results-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+        .award-section {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .award-title {
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .award-title i { color: #f39c12; }
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .result-item:last-child { border-bottom: none; }
+        .rank {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            background: rgba(255,255,255,0.1);
+            flex-shrink: 0;
+        }
+        .rank.gold { background: linear-gradient(135deg, #FFD700, #FFA500); color: #1a2a3a; }
+        .rank.silver { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); color: #1a2a3a; }
+        .rank.bronze { background: linear-gradient(135deg, #CD7F32, #A0522D); color: #fff; }
+        .result-info { flex: 1; min-width: 0; }
+        .result-group {
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .result-group .color-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .result-task {
+            font-size: 13px;
+            color: #94a3b8;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .result-votes {
+            font-size: 20px;
+            font-weight: 800;
+            color: #f39c12;
+            flex-shrink: 0;
+        }
+        .result-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 6px;
+            overflow: hidden;
+        }
+        .result-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            color: #94a3b8;
+        }
+        .loading i { margin-right: 8px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+        .no-data i { font-size: 48px; margin-bottom: 16px; display: block; }
+        .admin-link {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #94a3b8;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .admin-link:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        .back-link {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #94a3b8;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .back-link:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-trophy"></i> 投票结果</h1>
+        <p>实时投票看板</p>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value" id="totalVoters">0</div>
+            <div class="stat-label">投票人数</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="totalVotes">0</div>
+            <div class="stat-label">总票数</div>
+        </div>
+    </div>
+
+    <div class="refresh-bar">
+        <span id="lastUpdate">刚刚更新</span>
+        <button class="refresh-btn" onclick="loadResults()"><i class="fas fa-sync-alt"></i> 刷新</button>
+    </div>
+
+    <div class="results-container" id="resultsContainer">
+        <div class="loading"><i class="fas fa-spinner"></i> 正在加载结果...</div>
+    </div>
+
+    <a href="admin.html" class="admin-link"><i class="fas fa-cog"></i> 管理</a>
+    <a href="vote.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回投票</a>
+
+    <script src="voting-config.js"></script>
+    <script>
+        let challengeCards = [];
+        let refreshInterval = null;
+        let lastUpdateTime = Date.now();
+
+        async function loadResults() {
+            const container = document.getElementById('resultsContainer');
+
+            try {
+                const votesData = await SupabaseAPI.getAllVotes();
+                const votes = Array.isArray(votesData) ? votesData : (votesData.results || []);
+
+                // Load challenge cards from assignment results
+                const assignedCards = localStorage.getItem('voting_challenge_cards');
+                if (assignedCards) {
+                    try {
+                        challengeCards = JSON.parse(assignedCards);
+                    } catch (e) {
+                        challengeCards = getDefaultCards();
+                    }
+                } else {
+                    const stored = localStorage.getItem('ai_challenge_config');
+                    if (stored) {
+                        try {
+                            const config = JSON.parse(stored);
+                            challengeCards = config.cards || [];
+                        } catch (e) {
+                            challengeCards = getDefaultCards();
+                        }
+                    } else {
+                        challengeCards = getDefaultCards();
+                    }
+                }
+
+                // Aggregate votes
+                const creativeVotes = {};
+                const promptVotes = {};
+                votes.forEach(v => {
+                    (v.best_c_votes || []).forEach(id => {
+                        creativeVotes[id] = (creativeVotes[id] || 0) + 1;
+                    });
+                    (v.prompt_m_votes || []).forEach(id => {
+                        promptVotes[id] = (promptVotes[id] || 0) + 1;
+                    });
+                });
+
+                // Update stats
+                document.getElementById('totalVoters').textContent = votes.length;
+                document.getElementById('totalVotes').textContent =
+                    votes.reduce((sum, v) =>
+                        sum + (v.best_c_votes?.length || 0) + (v.prompt_m_votes?.length || 0), 0);
+
+                // Render results
+                if (votes.length === 0) {
+                    container.innerHTML = `
+                        <div class="no-data">
+                            <i class="fas fa-chart-bar"></i>
+                            <p>还没有投票。分享二维码开始投票吧！</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        ${renderAwardSection('最佳创意奖', 'fa-palette', creativeVotes)}
+                        ${renderAwardSection('提示词大师奖', 'fa-wand-magic-sparkles', promptVotes)}
+                    `;
+                }
+
+                lastUpdateTime = Date.now();
+                document.getElementById('lastUpdate').textContent = '刚刚更新';
+            } catch (error) {
+                console.error('Failed to load results:', error);
+                container.innerHTML = `<div class="no-data"><i class="fas fa-exclamation-triangle"></i><p>加载结果失败，请重试。</p></div>`;
+            }
+        }
+
+        function renderAwardSection(title, icon, voteCounts) {
+            const sorted = Object.entries(voteCounts)
+                .map(([id, count]) => ({ id: parseInt(id), count }))
+                .sort((a, b) => b.count - a.count);
+
+            const maxVotes = sorted.length > 0 ? sorted[0].count : 1;
+
+            let html = `
+                <div class="award-section">
+                    <div class="award-title"><i class="fas ${icon}"></i> ${title}</div>
+            `;
+
+            if (sorted.length === 0) {
+                html += `<div class="no-data"><p>这个奖项还没有票数。</p></div>`;
+            } else {
+                sorted.forEach((item, index) => {
+                    const card = challengeCards.find(c => c.id === item.id);
+                    const group = card ? (card.groupName || `第 ${item.id} 组`) : `项目 #${item.id}`;
+                    const task = card ? card.task : '';
+                    const color = card ? (card.groupColor || getGroupColor(item.id)) : getGroupColor(item.id);
+                    const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                    const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`;
+                    const barWidth = (item.count / maxVotes) * 100;
+
+                    html += `
+                        <div class="result-item">
+                            <div class="rank ${rankClass}">${rankIcon}</div>
+                            <div class="result-info">
+                                <div class="result-group">
+                                    <span class="color-dot" style="background: ${color}"></span>
+                                    ${group}
+                                </div>
+                                <div class="result-task">${task}</div>
+                                <div class="result-bar-bg">
+                                    <div class="result-bar-fill" style="width: ${barWidth}%"></div>
+                                </div>
+                            </div>
+                            <div class="result-votes">${item.count}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `</div>`;
+            return html;
+        }
+
+        function getGroupColor(id) {
+            const colors = ['#FF8C42', '#2E86AB', '#A23B72', '#F18F01', '#27AE60'];
+            return colors[(id - 1) % colors.length];
+        }
+
+        function getDefaultCards() {
+            return [
+                { id: 1, type: "🎵 音乐", task: "用你最喜欢的电影风格，为今天的会议生成一段开场音乐。" },
+                { id: 2, type: "🎵 音乐", task: "改写《两只老虎》，歌词要唱出现实职场痛点。" },
+                { id: 3, type: "🖼️ 图片", task: "HR 团建现场：所有人骑着龙虾在城市里竞速。" },
+                { id: 4, type: "🖼️ 图片", task: "描绘 10 年后的办公室：人类与 AI 或机器人共同协作。" },
+                { id: 5, type: "🖼️ 图片", task: "在梵高《星空》中，每一颗星星都是一张发光的 Excel 图表。" }
+            ];
+        }
+
+        // Auto-refresh every 10 seconds
+        function startAutoRefresh() {
+            refreshInterval = setInterval(() => {
+                loadResults();
+                const seconds = Math.floor((Date.now() - lastUpdateTime) / 1000);
+                document.getElementById('lastUpdate').textContent = `更新于：${seconds} 秒前`;
+            }, 10000);
+
+            // Update "last updated" text every second
+            setInterval(() => {
+                const seconds = Math.floor((Date.now() - lastUpdateTime) / 1000);
+                document.getElementById('lastUpdate').textContent = `更新于：${seconds} 秒前`;
+            }, 1000);
+        }
+
+        // Initialize
+        loadResults();
+        startAutoRefresh();
+    </script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 提示词挑战 - 管理后台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0f1a24 0%, #1a2a3a 50%, #2c3e50 100%);
+            background-attachment: fixed;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            padding: 30px 20px 20px;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD966, #FF8C42, #f39c12);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+        .header p { color: #94a3b8; font-size: 14px; }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+        .card {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title i { color: #f39c12; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-item {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-value { font-size: 32px; font-weight: 800; color: #f39c12; }
+        .stat-label { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .status-active { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .status-ended { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: #1a2a3a;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(243,156,18,0.4); }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+        }
+        .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(239,68,68,0.4); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .qr-section {
+            text-align: center;
+            padding: 20px;
+        }
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 16px auto;
+            background: #fff;
+            padding: 12px;
+            border-radius: 12px;
+        }
+        .qr-code canvas { width: 100% !important; height: 100% !important; }
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+        .loading i { margin-right: 8px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        .login-box {
+            background: linear-gradient(135deg, #1a2a3a, #2c3e50);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 360px;
+            width: 90%;
+        }
+        .login-box h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .login-box p { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
+        .login-input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 16px;
+        }
+        .login-input:focus { outline: none; border-color: #f39c12; }
+        .login-error { color: #ef4444; font-size: 13px; margin-bottom: 12px; display: none; }
+        .back-link {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #94a3b8;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .back-link:hover { background: rgba(255,255,255,0.2); color: #fff; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2><i class="fas fa-lock"></i> 管理员登录</h2>
+            <p>请输入管理员密码继续</p>
+            <input type="password" class="login-input" id="passwordInput" placeholder="密码" onkeydown="if(event.key==='Enter') login()">
+            <div class="login-error" id="loginError">密码错误，请重试。</div>
+            <button class="btn btn-primary" onclick="login()" style="width: 100%; justify-content: center;">
+                <i class="fas fa-sign-in-alt"></i> 登录
+            </button>
+        </div>
+    </div>
+
+    <!-- 管理 Content -->
+    <div id="adminContent" class="hidden">
+        <div class="header">
+            <h1><i class="fas fa-cog"></i> 管理后台</h1>
+            <p>管理投票会话并查看结果</p>
+        </div>
+
+        <div class="container">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalVoters">0</div>
+                    <div class="stat-label">投票人数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalVotes">0</div>
+                    <div class="stat-label">总票数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="sessionStatus">-</div>
+                    <div class="stat-label">会话状态</div>
+                </div>
+            </div>
+
+            <!-- 投票会话控制 -->
+            <div class="card">
+                <div class="card-title"><i class="fas fa-play-circle"></i> 投票会话控制</div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="startBtn" onclick="startSession()">
+                        <i class="fas fa-play"></i> 开始投票
+                    </button>
+                    <button class="btn btn-danger" id="stopBtn" onclick="stopSession()">
+                        <i class="fas fa-stop"></i> 停止投票
+                    </button>
+                    <button class="btn btn-danger" id="resetBtn" onclick="resetSession()">
+                        <i class="fas fa-trash"></i> 清空所有投票
+                    </button>
+                </div>
+            </div>
+
+            <!-- QR Code -->
+            <div class="card">
+                <div class="card-title"><i class="fas fa-qrcode"></i> 投票二维码</div>
+                <div class="qr-section">
+                    <p style="color: #94a3b8; margin-bottom: 12px;">扫码进入投票页面</p>
+                    <img src="QR Code for Voting Page.png" alt="投票二维码" style="max-width: 200px; border-radius: 8px;">
+                    <p style="color: #64748b; font-size: 12px; margin-top: 12px;" id="qrUrl"></p>
+                </div>
+            </div>
+
+            <!-- Export -->
+            <div class="card">
+                <div class="card-title"><i class="fas fa-download"></i> 导出结果</div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="exportCSV()">
+                        <i class="fas fa-file-csv"></i> 导出 CSV
+                    </button>
+                    <button class="btn btn-secondary" onclick="exportJSON()">
+                        <i class="fas fa-file-code"></i> 导出 JSON
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <a href="results.html" class="back-link"><i class="fas fa-chart-bar"></i> 查看结果</a>
+    </div>
+
+    <script src="voting-config.js?v=2"></script>
+    <script>
+        // ===== Login =====
+        function login() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === VOTING_CONFIG.ADMIN_PASSWORD) {
+                document.getElementById('loginOverlay').classList.add('hidden');
+                document.getElementById('adminContent').classList.remove('hidden');
+                initAdmin();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+
+        // ===== 管理 Functions =====
+        async function initAdmin() {
+            await loadStats();
+            document.getElementById('qrUrl').textContent = VOTING_CONFIG.VOTING_PAGE_URL;
+        }
+
+        async function loadStats() {
+            try {
+                const votesData = await SupabaseAPI.getAllVotes();
+                const votes = Array.isArray(votesData) ? votesData : (votesData.results || []);
+
+                document.getElementById('totalVoters').textContent = votes.length;
+                document.getElementById('totalVotes').textContent =
+                    votes.reduce((sum, v) =>
+                        sum + (v.best_c_votes?.length || 0) + (v.prompt_m_votes?.length || 0), 0);
+
+                const session = await SupabaseAPI.getVotingSession();
+                const statusEl = document.getElementById('sessionStatus');
+                if (session && session.is_active) {
+                    statusEl.textContent = '进行中';
+                    statusEl.style.color = '#22c55e';
+                } else {
+                    statusEl.textContent = '已结束';
+                    statusEl.style.color = '#ef4444';
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        async function startSession() {
+            if (!confirm('确定开始投票吗？参与者将可以提交投票。')) return;
+
+            try {
+                const session = await SupabaseAPI.getVotingSession();
+                if (session) {
+                    await SupabaseAPI.update('voting_session', 'id', session.id, { is_active: true });
+                } else {
+                    await SupabaseAPI.create('voting_session', { is_active: true });
+                }
+                alert('投票已开始！');
+                loadStats();
+            } catch (error) {
+                console.error('Failed to start session:', error);
+                alert('开始投票失败，请重试。');
+            }
+        }
+
+        async function stopSession() {
+            if (!confirm('确定停止投票吗？参与者将无法继续提交投票。')) return;
+
+            try {
+                const session = await SupabaseAPI.getVotingSession();
+                if (session) {
+                    await SupabaseAPI.update('voting_session', 'id', session.id, { is_active: false });
+                }
+                alert('投票已停止！');
+                loadStats();
+            } catch (error) {
+                console.error('Failed to stop session:', error);
+                alert('停止投票失败，请重试。');
+            }
+        }
+
+        async function resetSession() {
+            if (!confirm('警告：这会删除所有投票，且无法撤销。是否继续？')) return;
+            if (!confirm('请再次确认：所有投票数据都会被永久删除。')) return;
+
+            try {
+                await SupabaseAPI.deleteAllVotes();
+                alert('所有投票已清空。');
+                loadStats();
+            } catch (error) {
+                console.error('Failed to reset votes:', error);
+                alert('清空投票失败，请重试。');
+            }
+        }
+
+        // ===== Export =====
+        async function exportCSV() {
+            try {
+                const votesData = await SupabaseAPI.getAllVotes();
+                const votes = Array.isArray(votesData) ? votesData : (votesData.results || []);
+
+                if (votes.length === 0) {
+                    alert('暂无可导出的投票。');
+                    return;
+                }
+
+                let csv = '投票会话 ID,最佳创意奖票项,提示词大师奖票项,时间\n';
+                votes.forEach(v => {
+                    const creative = (v.best_c_votes || []).join('; ');
+                    const prompt = (v.prompt_m_votes || []).join('; ');
+                    const time = v.created_at || '';
+                    csv += `"${v.voter_session_id}","${creative}","${prompt}","${time}"\n`;
+                });
+
+                downloadFile(csv, '投票结果.csv', 'text/csv');
+            } catch (error) {
+                console.error('Export failed:', error);
+                alert('导出结果失败。');
+            }
+        }
+
+        async function exportJSON() {
+            try {
+                const votesData = await SupabaseAPI.getAllVotes();
+                const votes = Array.isArray(votesData) ? votesData : (votesData.results || []);
+
+                if (votes.length === 0) {
+                    alert('暂无可导出的投票。');
+                    return;
+                }
+
+                const json = JSON.stringify(votes, null, 2);
+                downloadFile(json, '投票结果.json', 'application/json');
+            } catch (error) {
+                console.error('Export failed:', error);
+                alert('导出结果失败。');
+            }
+        }
+
+        function downloadFile(content, filename, type) {
+            const blob = new Blob([content], { type });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Auto-refresh stats every 10 seconds
+        setInterval(() => {
+            if (!document.getElementById('adminContent').classList.contains('hidden')) {
+                loadStats();
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
