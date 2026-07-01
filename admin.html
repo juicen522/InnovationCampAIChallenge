@@ -249,7 +249,7 @@
                 <div class="card-title"><i class="fas fa-qrcode"></i> 投票二维码</div>
                 <div class="qr-section">
                     <p style="color: #94a3b8; margin-bottom: 12px;">扫码进入投票页面</p>
-                    <img src="QR Code for Voting Page.png" alt="投票二维码" style="max-width: 200px; border-radius: 8px;">
+                    <img id="qrImage" src="" alt="投票二维码" style="max-width: 200px; border-radius: 8px;">
                     <p style="color: #64748b; font-size: 12px; margin-top: 12px;" id="qrUrl"></p>
                 </div>
             </div>
@@ -289,6 +289,8 @@
         async function initAdmin() {
             await loadStats();
             document.getElementById('qrUrl').textContent = VOTING_CONFIG.VOTING_PAGE_URL;
+            document.getElementById('qrImage').src =
+                `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(VOTING_CONFIG.VOTING_PAGE_URL)}`;
         }
 
         async function loadStats() {

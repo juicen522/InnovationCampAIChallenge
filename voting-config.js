@@ -2,7 +2,7 @@
 const VOTING_CONFIG = {
     SUPABASE_URL: 'local-storage',
     SUPABASE_ANON_KEY: 'local-development',
-    VOTING_PAGE_URL: 'vote.html',
+    VOTING_PAGE_URL: 'https://juicen522.github.io/InnovationCampAIChallenge/vote.html',
     ADMIN_PASSWORD: 'admin123',
     VOTING_TIME_LIMIT_SECONDS: 120,
     VOTES_PER_AWARD: 2,
