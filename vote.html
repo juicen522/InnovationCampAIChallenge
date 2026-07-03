@@ -127,16 +127,12 @@
             border-radius: 50%;
             display: inline-block;
         }
-        .card-type {
-            font-size: 14px;
-            font-weight: 600;
-            color: #f39c12;
-            margin-bottom: 4px;
-        }
-        .card-task {
-            font-size: 14px;
+        .candidate-name {
+            font-size: 22px;
+            font-weight: 800;
             color: #e2e8f0;
-            line-height: 1.4;
+            line-height: 1.2;
+            padding-right: 36px;
         }
         .submit-bar {
             position: fixed;
@@ -240,7 +236,7 @@
     </div>
 
     <div id="loadingState" class="loading">
-        <i class="fas fa-spinner"></i> 正在加载挑战卡片...
+        <i class="fas fa-spinner"></i> 正在加载投票选项...
     </div>
 
     <div id="votingContent" style="display: none;">
@@ -253,10 +249,10 @@
             <div class="card-list" id="creativeCards"></div>
         </div>
 
-        <!-- 提示词大师奖 Award -->
+        <!-- 最佳影片奖 Award -->
         <div class="award-section">
             <div class="award-header">
-                <div class="award-title"><i class="fas fa-wand-magic-sparkles"></i> 提示词大师奖</div>
+                <div class="award-title"><i class="fas fa-film"></i> 最佳影片奖</div>
                 <div class="selection-count" id="promptCount">已选： 0/2</div>
             </div>
             <div class="card-list" id="promptCards"></div>
@@ -305,7 +301,7 @@
     <script src="voting-config.js"></script>
     <script>
         // ===== State =====
-        let challengeCards = [];
+        let votingCandidates = [];
         let selections = { bestCreative: [], promptMaster: [] };
         let votingActive = true;
         let timeLeft = VOTING_CONFIG.VOTING_TIME_LIMIT_SECONDS;
@@ -339,39 +335,7 @@
                 console.warn('Failed to get voting session:', e);
             }
 
-            // Load challenge cards from assignment results
-            const assignedCards = localStorage.getItem('voting_challenge_cards');
-            if (assignedCards) {
-                try {
-                    challengeCards = JSON.parse(assignedCards);
-                } catch (e) {
-                    console.error('Failed to parse assigned cards:', e);
-                }
-            }
-
-            // Fallback: use config cards
-            if (challengeCards.length === 0) {
-                const stored = localStorage.getItem('ai_challenge_config');
-                if (stored) {
-                    try {
-                        const config = JSON.parse(stored);
-                        challengeCards = config.cards || [];
-                    } catch (e) {
-                        console.error('Failed to parse config:', e);
-                    }
-                }
-            }
-
-            // Fallback: use default cards if none found
-            if (challengeCards.length === 0) {
-                challengeCards = [
-                    { id: 1, type: "🎵 音乐", task: "用你最喜欢的电影风格，为今天的会议生成一段开场音乐。", platforms: "Gemini, Suno/Udio" },
-                    { id: 2, type: "🎵 音乐", task: "改写《两只老虎》，歌词要唱出现实职场痛点。", platforms: "Gemini, Suno/Udio" },
-                    { id: 3, type: "🖼️ 图片", task: "HR 团建现场：所有人骑着龙虾在城市里竞速。", platforms: "豆包、即梦、Minimax、Gemini" },
-                    { id: 4, type: "🖼️ 图片", task: "描绘 10 年后的办公室：人类与 AI 或机器人共同协作。", platforms: "豆包、即梦、Minimax、Gemini" },
-                    { id: 5, type: "🖼️ 图片", task: "在梵高《星空》中，每一颗星星都是一张发光的 Excel 图表。", platforms: "豆包、即梦、Minimax、Gemini" }
-                ];
-            }
+            votingCandidates = VOTING_CONFIG.CANDIDATES || getDefaultCandidates();
 
             renderCards();
             startTimer();
@@ -389,29 +353,36 @@
             creativeContainer.innerHTML = '';
             promptContainer.innerHTML = '';
 
-            challengeCards.forEach(card => {
-                const groupName = card.groupName || `第 ${card.id} 组`;
-                const groupColor = card.groupColor || getGroupColor(card.id);
+            votingCandidates.forEach(candidate => {
+                const groupColor = candidate.color || getGroupColor(candidate.id);
                 const cardHTML = `
-                    <div class="vote-card" data-id="${card.id}" data-award="bestCreative" onclick="toggleVote('bestCreative', ${card.id}, this)">
+                    <div class="vote-card" data-id="${candidate.id}" data-award="bestCreative" onclick="toggleVote('bestCreative', ${candidate.id}, this)">
                         <div class="check-icon"><i class="fas fa-check"></i></div>
-                        <div class="card-group"><span class="color-dot" style="background: ${groupColor}"></span>${groupName}</div>
-                        <div class="card-type">${card.type}</div>
-                        <div class="card-task">${card.task}</div>
+                        <div class="card-group"><span class="color-dot" style="background: ${groupColor}"></span>候选小组</div>
+                        <div class="candidate-name">${candidate.name}</div>
                     </div>
                 `;
                 creativeContainer.innerHTML += cardHTML;
 
                 const promptHTML = `
-                    <div class="vote-card" data-id="${card.id}" data-award="promptMaster" onclick="toggleVote('promptMaster', ${card.id}, this)">
+                    <div class="vote-card" data-id="${candidate.id}" data-award="promptMaster" onclick="toggleVote('promptMaster', ${candidate.id}, this)">
                         <div class="check-icon"><i class="fas fa-check"></i></div>
-                        <div class="card-group"><span class="color-dot" style="background: ${groupColor}"></span>${groupName}</div>
-                        <div class="card-type">${card.type}</div>
-                        <div class="card-task">${card.task}</div>
+                        <div class="card-group"><span class="color-dot" style="background: ${groupColor}"></span>候选小组</div>
+                        <div class="candidate-name">${candidate.name}</div>
                     </div>
                 `;
                 promptContainer.innerHTML += promptHTML;
             });
+        }
+
+        function getDefaultCandidates() {
+            return [
+                { id: 1, name: '林秀组', color: '#FF8C42' },
+                { id: 2, name: '石奇组', color: '#2E86AB' },
+                { id: 3, name: '泉甘组', color: '#A23B72' },
+                { id: 4, name: '茶香组', color: '#F18F01' },
+                { id: 5, name: '佛圣组', color: '#27AE60' }
+            ];
         }
 
         function getGroupColor(id) {

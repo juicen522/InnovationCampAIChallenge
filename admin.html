@@ -376,7 +376,7 @@
                     return;
                 }
 
-                let csv = '投票会话 ID,最佳创意奖票项,提示词大师奖票项,时间\n';
+                let csv = '投票会话 ID,最佳创意奖票项,最佳影片奖票项,时间\n';
                 votes.forEach(v => {
                     const creative = (v.best_c_votes || []).join('; ');
                     const prompt = (v.prompt_m_votes || []).join('; ');

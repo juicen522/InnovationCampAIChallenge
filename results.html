@@ -124,13 +124,6 @@
             border-radius: 50%;
             display: inline-block;
         }
-        .result-task {
-            font-size: 13px;
-            color: #94a3b8;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
         .result-votes {
             font-size: 20px;
             font-weight: 800;
@@ -227,7 +220,7 @@
 
     <script src="voting-config.js"></script>
     <script>
-        let challengeCards = [];
+        let votingCandidates = [];
         let refreshInterval = null;
         let lastUpdateTime = Date.now();
 
@@ -238,27 +231,7 @@
                 const votesData = await SupabaseAPI.getAllVotes();
                 const votes = Array.isArray(votesData) ? votesData : (votesData.results || []);
 
-                // Load challenge cards from assignment results
-                const assignedCards = localStorage.getItem('voting_challenge_cards');
-                if (assignedCards) {
-                    try {
-                        challengeCards = JSON.parse(assignedCards);
-                    } catch (e) {
-                        challengeCards = getDefaultCards();
-                    }
-                } else {
-                    const stored = localStorage.getItem('ai_challenge_config');
-                    if (stored) {
-                        try {
-                            const config = JSON.parse(stored);
-                            challengeCards = config.cards || [];
-                        } catch (e) {
-                            challengeCards = getDefaultCards();
-                        }
-                    } else {
-                        challengeCards = getDefaultCards();
-                    }
-                }
+                votingCandidates = VOTING_CONFIG.CANDIDATES || getDefaultCandidates();
 
                 // Aggregate votes
                 const creativeVotes = {};
@@ -289,7 +262,7 @@
                 } else {
                     container.innerHTML = `
                         ${renderAwardSection('最佳创意奖', 'fa-palette', creativeVotes)}
-                        ${renderAwardSection('提示词大师奖', 'fa-wand-magic-sparkles', promptVotes)}
+                        ${renderAwardSection('最佳影片奖', 'fa-film', promptVotes)}
                     `;
                 }
 
@@ -317,10 +290,9 @@
                 html += `<div class="no-data"><p>这个奖项还没有票数。</p></div>`;
             } else {
                 sorted.forEach((item, index) => {
-                    const card = challengeCards.find(c => c.id === item.id);
-                    const group = card ? (card.groupName || `第 ${item.id} 组`) : `项目 #${item.id}`;
-                    const task = card ? card.task : '';
-                    const color = card ? (card.groupColor || getGroupColor(item.id)) : getGroupColor(item.id);
+                    const candidate = votingCandidates.find(c => c.id === item.id);
+                    const group = candidate ? candidate.name : `项目 #${item.id}`;
+                    const color = candidate ? (candidate.color || getGroupColor(item.id)) : getGroupColor(item.id);
                     const rankClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
                     const rankIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}`;
                     const barWidth = (item.count / maxVotes) * 100;
@@ -333,7 +305,6 @@
                                     <span class="color-dot" style="background: ${color}"></span>
                                     ${group}
                                 </div>
-                                <div class="result-task">${task}</div>
                                 <div class="result-bar-bg">
                                     <div class="result-bar-fill" style="width: ${barWidth}%"></div>
                                 </div>
@@ -353,13 +324,13 @@
             return colors[(id - 1) % colors.length];
         }
 
-        function getDefaultCards() {
+        function getDefaultCandidates() {
             return [
-                { id: 1, type: "🎵 音乐", task: "用你最喜欢的电影风格，为今天的会议生成一段开场音乐。" },
-                { id: 2, type: "🎵 音乐", task: "改写《两只老虎》，歌词要唱出现实职场痛点。" },
-                { id: 3, type: "🖼️ 图片", task: "HR 团建现场：所有人骑着龙虾在城市里竞速。" },
-                { id: 4, type: "🖼️ 图片", task: "描绘 10 年后的办公室：人类与 AI 或机器人共同协作。" },
-                { id: 5, type: "🖼️ 图片", task: "在梵高《星空》中，每一颗星星都是一张发光的 Excel 图表。" }
+                { id: 1, name: '林秀组', color: '#FF8C42' },
+                { id: 2, name: '石奇组', color: '#2E86AB' },
+                { id: 3, name: '泉甘组', color: '#A23B72' },
+                { id: 4, name: '茶香组', color: '#F18F01' },
+                { id: 5, name: '佛圣组', color: '#27AE60' }
             ];
         }
 

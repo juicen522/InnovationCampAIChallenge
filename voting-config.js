@@ -8,7 +8,14 @@ const VOTING_CONFIG = {
     VOTES_PER_AWARD: 2,
     AWARDS: [
         { id: 'bestCreative', name: '最佳创意奖', icon: 'fa-palette' },
-        { id: 'promptMaster', name: '提示词大师奖', icon: 'fa-wand-magic-sparkles' }
+        { id: 'promptMaster', name: '最佳影片奖', icon: 'fa-film' }
+    ],
+    CANDIDATES: [
+        { id: 1, name: '林秀组', color: '#FF8C42' },
+        { id: 2, name: '石奇组', color: '#2E86AB' },
+        { id: 3, name: '泉甘组', color: '#A23B72' },
+        { id: 4, name: '茶香组', color: '#F18F01' },
+        { id: 5, name: '佛圣组', color: '#27AE60' }
     ]
 };
 
