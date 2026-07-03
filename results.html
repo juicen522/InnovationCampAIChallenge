@@ -54,17 +54,6 @@
             color: #64748b;
             font-size: 13px;
         }
-        .refresh-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s ease;
-        }
-        .refresh-btn:hover { background: rgba(255,255,255,0.2); }
         .results-container {
             max-width: 800px;
             margin: 0 auto;
@@ -207,8 +196,7 @@
     </div>
 
     <div class="refresh-bar">
-        <span id="lastUpdate">刚刚更新</span>
-        <button class="refresh-btn" onclick="loadResults()"><i class="fas fa-sync-alt"></i> 刷新</button>
+        <span id="lastUpdate"><i class="fas fa-sync-alt"></i> 每秒自动更新</span>
     </div>
 
     <div class="results-container" id="resultsContainer">
@@ -222,9 +210,11 @@
     <script>
         let votingCandidates = [];
         let refreshInterval = null;
-        let lastUpdateTime = Date.now();
+        let refreshInProgress = false;
 
         async function loadResults() {
+            if (refreshInProgress) return;
+            refreshInProgress = true;
             const container = document.getElementById('resultsContainer');
 
             try {
@@ -266,11 +256,12 @@
                     `;
                 }
 
-                lastUpdateTime = Date.now();
-                document.getElementById('lastUpdate').textContent = '刚刚更新';
+                document.getElementById('lastUpdate').innerHTML = '<i class="fas fa-sync-alt"></i> 每秒自动更新';
             } catch (error) {
                 console.error('Failed to load results:', error);
                 container.innerHTML = `<div class="no-data"><i class="fas fa-exclamation-triangle"></i><p>加载结果失败，请重试。</p></div>`;
+            } finally {
+                refreshInProgress = false;
             }
         }
 
@@ -334,18 +325,10 @@
             ];
         }
 
-        // Auto-refresh every 10 seconds
+        // Auto-refresh every second
         function startAutoRefresh() {
             refreshInterval = setInterval(() => {
                 loadResults();
-                const seconds = Math.floor((Date.now() - lastUpdateTime) / 1000);
-                document.getElementById('lastUpdate').textContent = `更新于：${seconds} 秒前`;
-            }, 10000);
-
-            // Update "last updated" text every second
-            setInterval(() => {
-                const seconds = Math.floor((Date.now() - lastUpdateTime) / 1000);
-                document.getElementById('lastUpdate').textContent = `更新于：${seconds} 秒前`;
             }, 1000);
         }
 
